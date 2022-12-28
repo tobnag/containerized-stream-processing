@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  kafka-tweet-producer:
+    build:
+      context: ./kafka_tweet_producer/
+    image: kafka-tweet-producer:latest
+    volumes:
+      - ./data:/app/data
+    container_name: kafka-tweet-producer
