@@ -1,0 +1,8 @@
+### local folders ###
+/data
+/misc
+
+### environment files/folders ###
+**/.DS_Store
+**/.ipynb_checkpoints
+**/__pycache__
