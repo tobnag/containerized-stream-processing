@@ -1,11 +1,16 @@
+import os
 import numpy as np
 import pandas as pd
 from time import sleep
 from json import dumps
 from kafka import KafkaProducer
 
-BOOTSTRAP_SERVERS = ['kafka:9092']
-API_VERSION = (0, 10, 2)
+BOOTSTRAP_SERVERS = f"{os.environ['KAFKA_ADVERTISED_HOST_NAME']}:{os.environ['KAFKA_PORT']}"
+API_VERSION = tuple(map(lambda s: int(s.strip()), os.environ['KAFKA_API_VERSION'].split(',')))
+TOPIC_TRUMP = os.environ['KAFKA_TOPIC_TRUMP']
+TOPIC_BIDEN = os.environ['KAFKA_TOPIC_BIDEN']
+PATH_TRUMP = os.environ['FILE_PATH_TRUMP']
+PATH_BIDEN = os.environ['FILE_PATH_BIDEN']
 
 producer = KafkaProducer(
     bootstrap_servers=BOOTSTRAP_SERVERS,
@@ -26,7 +31,7 @@ def kafka_server_healthcheck(max_wait_time_seconds=10):
     raise RuntimeError(
         f"Timeout: Connection to Kafka server could not be established after {max_wait_time_seconds} seconds.")
 
-def load_dataset(path, candidate):
+def load_dataset(path, topic):
     dtype = {
         'tweet_id': int,
         'likes': int,
@@ -40,15 +45,15 @@ def load_dataset(path, candidate):
     df = pd.read_csv(path, dtype=dtype, parse_dates=parse_dates, lineterminator='\n')
     df.drop_duplicates(subset=['created_at', 'tweet_id', 'user_id'], inplace=True)
     df.sort_values('created_at', ignore_index=True, inplace=True)
-    df.insert(1, 'candidate', candidate)
+    df.insert(1, 'topic', topic)
     return df
 
-def load_datasets(path_trump, path_biden):
+def load_datasets(path_trump=PATH_TRUMP, path_biden=PATH_BIDEN):
     print("Loading Trump's dataset...")
-    df_trump = load_dataset(path=path_trump, candidate='Trump')
+    df_trump = load_dataset(path=path_trump, topic=TOPIC_TRUMP)
     print(f"Loaded Trump's dataset with {df_trump.size} rows.")
     print("Loading Biden's dataset...")
-    df_biden = load_dataset(path=path_biden, candidate='Biden')
+    df_biden = load_dataset(path=path_biden, topic=TOPIC_BIDEN)
     print(f"Loaded Bidens's dataset with {df_biden.size} rows.")
     return df_trump, df_biden
 
@@ -57,7 +62,7 @@ def join_datasets(df_1, df_2):
     df.sort_values('created_at', inplace=True, ignore_index=True)
     return df
 
-def simulate_tweets(df, time_multiplicator=1, early_stopping=None):
+def kafka_simulate_tweets(df, time_multiplicator=1, early_stopping=None):
     print("Started tweet simulation. This application will exit when the simulation is complete.")
     t = 'created_at'
     current_time = np.min(df[t])
@@ -71,18 +76,15 @@ def simulate_tweets(df, time_multiplicator=1, early_stopping=None):
         df_slice = df[np.logical_and(current_time<=df[t], df[t]<next_time)]
         for _, data in df_slice.iterrows():
             producer.send(
-                topic=data['candidate'].lower(),
-                value=data.drop('candidate').to_json()
+                topic=data['topic'],
+                value=data.drop('topic').to_json()
             )
         current_time = next_time
         sleep(wait_time)
     print("Tweet simulation is complete. This application exits now.")
 
 if __name__ == '__main__':
-    df_trump, df_biden = load_datasets(
-        path_trump='/app/data/hashtag_donaldtrump.csv',
-        path_biden='/app/data/hashtag_joebiden.csv'
-    )
+    df_trump, df_biden = load_datasets()
     df = join_datasets(df_trump, df_biden)
     kafka_server_healthcheck()
-    simulate_tweets(df, time_multiplicator=1, early_stopping=60)
+    kafka_simulate_tweets(df, time_multiplicator=1, early_stopping=60)

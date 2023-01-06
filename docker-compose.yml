@@ -12,11 +12,11 @@ services:
     image: ubuntu/kafka
     container_name: kafka
     ports:
-      - '9092:9092'
+      - ${KAFKA_PORT}:${KAFKA_PORT}
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: kafka
-      KAFKA_LISTENERS: kafka:9092
+      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_ADVERTISED_HOST_NAME}
+      KAFKA_LISTENERS: ${KAFKA_ADVERTISED_HOST_NAME}:${KAFKA_PORT}
       # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
     depends_on:
       - zookeeper
@@ -26,6 +26,12 @@ services:
       context: ./kafka_tweet_consumer
     image: kafka-tweet-consumer:latest
     container_name: kafka-tweet-consumer
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME
+      - KAFKA_PORT
+      - KAFKA_API_VERSION
+      - KAFKA_TOPIC_TRUMP
+      - KAFKA_TOPIC_BIDEN
     depends_on:
       - kafka
 
@@ -33,8 +39,16 @@ services:
     build:
       context: ./kafka_tweet_producer/
     image: kafka-tweet-producer:latest
-    volumes:
-      - ./data:/app/data
     container_name: kafka-tweet-producer
+    volumes:
+      - ./data:${DATA_PATH}
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME
+      - KAFKA_PORT
+      - KAFKA_API_VERSION
+      - KAFKA_TOPIC_TRUMP
+      - KAFKA_TOPIC_BIDEN
+      - FILE_PATH_TRUMP
+      - FILE_PATH_BIDEN
     depends_on:
       - kafka-tweet-consumer
