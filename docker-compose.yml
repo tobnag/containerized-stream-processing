@@ -23,7 +23,7 @@ services:
 
   kafka-tweet-consumer:
     build: 
-      context: ./kafka_tweet_consumer
+      context: ${PWD}/kafka_tweet_consumer
     image: kafka-tweet-consumer:latest
     container_name: kafka-tweet-consumer
     environment:
@@ -37,11 +37,11 @@ services:
 
   kafka-tweet-producer:
     build:
-      context: ./kafka_tweet_producer/
+      context: ${PWD}/kafka_tweet_producer/
     image: kafka-tweet-producer:latest
     container_name: kafka-tweet-producer
     volumes:
-      - ./data:${DATA_PATH}
+      - ${PWD}/data:${DATA_PATH}
     environment:
       - KAFKA_ADVERTISED_HOST_NAME
       - KAFKA_PORT
