@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Turns off buffering for easier logging
 ENV PYTHONUNBUFFERED 1
 
-WORKDIR ${APP_PATH}
+WORKDIR /app
 
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
