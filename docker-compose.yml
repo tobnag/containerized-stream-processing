@@ -93,7 +93,3 @@ services:
       - KAFKA_API_VERSION
       - KAFKA_TOPIC_TRUMP
       - KAFKA_TOPIC_BIDEN
-    command: '/opt/bitnami/spark/bin/spark-submit --master spark://spark-master:7077 /app/SparkApp.jar'
-
-# Spark package for Kafka 0.10:
-# --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.2
