@@ -12,7 +12,11 @@ lazy val acdcDoc = project
   .settings(
     settings,
     libraryDependencies ++= Seq(
-      library.spark
+      library.spark,
+      library.sparkCore,
+      library.sparkSql,
+      library.sparkStreaming,
+      library.sparkStreamingKafka
     )
   )
 
@@ -29,6 +33,10 @@ lazy val library = new {
 
 //   val spark = "org.apache.spark" %% "spark-sql" % version.spark
   val spark = "org.apache.spark" %% "spark-sql-kafka-0-10" % version.spark
+  val sparkCore = "org.apache.spark" %% "spark-core" % version.spark
+  val sparkSql = "org.apache.spark" %% "spark-sql" % version.spark
+  val sparkStreaming = "org.apache.spark" %% "spark-streaming" % version.spark
+  val sparkStreamingKafka = "org.apache.spark" %% "spark-streaming-kafka-0-10" % version.spark
 }
 
 // *****************************************************************************

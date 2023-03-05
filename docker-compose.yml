@@ -86,7 +86,7 @@ services:
       - spark-worker
       - kafka
     environment:
-      - SPARK_MODE=submit
+      - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
       - KAFKA_ADVERTISED_HOST_NAME
       - KAFKA_PORT
