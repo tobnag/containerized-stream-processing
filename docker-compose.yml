@@ -24,10 +24,10 @@ services:
     ports:
       - ${KAFKA_PORT}:${KAFKA_PORT}
 
-  kafka-tweet-consumer:
-    build: ./kafka_tweet_consumer
-    image: kafka-tweet-consumer:0.1
-    container_name: kafka-tweet-consumer
+  kafka-consumer-dev:  # only for development purposes
+    build: ./kafka_consumer_dev
+    image: kafka-consumer-dev:0.1
+    container_name: kafka-consumer-dev
     environment:
       - KAFKA_ADVERTISED_HOST_NAME
       - KAFKA_PORT
