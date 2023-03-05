@@ -1,4 +1,6 @@
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
+import model._
 
 object Main {
 
@@ -28,13 +30,16 @@ object Main {
       .options(kafkaParams)
       .load()
 
-    // Count messages per topic
-    val messagesGroupedByTopic: DataFrame = streamDF
-      .groupBy($"topic")
-      .sum()
+    // Parse messages as Tweet objects
+    val tweets: Dataset[Tweet] = streamDF
+      .flatMap {
+        case row if !row.isNullAt(0) && !row.isNullAt(1) && !row.isNullAt(2) =>
+          Tweet.parse(row.mkString)
+        case _ => None
+      }
 
     // Print the result on the console
-    val consoleOutput = messagesGroupedByTopic.writeStream
+    val consoleOutput = tweets.writeStream
       .outputMode("update")
       .format("console")
       .start()

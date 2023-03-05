@@ -7,7 +7,7 @@ import sbt.Keys._
 name := "KafkaSparkStructuredStreaming"
 version := "0.1"
 
-lazy val acdcDoc = project
+lazy val sparkDoc = project
   .in(file("."))
   .settings(
     settings,
