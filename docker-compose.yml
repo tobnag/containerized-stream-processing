@@ -3,28 +3,30 @@ version: "3"
 services:
 
   zookeeper:
-    image: ubuntu/zookeeper
+    image: bitnami/zookeeper:3.8
     container_name: zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
     ports:
       - '2181:2181'
       
   kafka:
-    image: ubuntu/kafka
+    image: bitnami/kafka:3.4
     container_name: kafka
-    ports:
-      - ${KAFKA_PORT}:${KAFKA_PORT}
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_ADVERTISED_HOST_NAME}
-      KAFKA_LISTENERS: ${KAFKA_ADVERTISED_HOST_NAME}:${KAFKA_PORT}
-      # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
     depends_on:
       - zookeeper
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:${KAFKA_PORT}
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://${KAFKA_ADVERTISED_HOST_NAME}:${KAFKA_PORT}
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    ports:
+      - ${KAFKA_PORT}:${KAFKA_PORT}
 
   kafka-tweet-consumer:
-    build: 
-      context: ${PWD}/kafka_tweet_consumer
-    image: kafka-tweet-consumer:latest
+    build: ./kafka_tweet_consumer
+    image: kafka-tweet-consumer:0.1
     container_name: kafka-tweet-consumer
     environment:
       - KAFKA_ADVERTISED_HOST_NAME
@@ -36,12 +38,12 @@ services:
       - kafka
 
   kafka-tweet-producer:
-    build:
-      context: ${PWD}/kafka_tweet_producer/
-    image: kafka-tweet-producer:latest
+    build: ./kafka
+    image: kafka-tweet-producer:0.1
     container_name: kafka-tweet-producer
-    volumes:
-      - ${PWD}/data:${DATA_PATH}
+    depends_on:
+      - kafka
+      - spark-submit
     environment:
       - KAFKA_ADVERTISED_HOST_NAME
       - KAFKA_PORT
@@ -50,5 +52,48 @@ services:
       - KAFKA_TOPIC_BIDEN
       - FILE_PATH_TRUMP
       - FILE_PATH_BIDEN
+    volumes:
+      - ./data:${DATA_PATH}
+
+  spark-master:
+    image: bitnami/spark:3.3.2
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - '8080:8080'
+      - '7077:7077'
+
+  spark-worker:
+    image: bitnami/spark:3.3.2
+    container_name: spark-worker
     depends_on:
-      - kafka-tweet-consumer
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+    ports:
+      - '8081:8081'
+
+  spark-submit:
+    build: ./spark
+    image: spark-submit:0.1
+    container_name: spark-submit
+    depends_on:
+      - spark-master
+      - spark-worker
+      - kafka
+    environment:
+      - SPARK_MODE=submit
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - KAFKA_ADVERTISED_HOST_NAME
+      - KAFKA_PORT
+      - KAFKA_API_VERSION
+      - KAFKA_TOPIC_TRUMP
+      - KAFKA_TOPIC_BIDEN
+    command: '/opt/bitnami/spark/bin/spark-submit --master spark://spark-master:7077 /app/SparkApp.jar'
+
+# Spark package for Kafka 0.10:
+# --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.2
