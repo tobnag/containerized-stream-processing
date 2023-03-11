@@ -1,33 +1,34 @@
 import pandas as pd
-import const
+import conf
 
-def load_dataset(path, topic):
-    dtype = {
-        'tweet_id': int,
-        'likes': int,
-        'retweet_count': int,
-        'user_id': int,
-        'user_followers_count': int,
-        'lat': float,
-        'long': float
-    }
-    parse_dates = ['created_at', 'collected_at']
-    df = pd.read_csv(path, dtype=dtype, parse_dates=parse_dates, lineterminator='\n')
-    df.drop_duplicates(subset=['created_at', 'tweet_id', 'user_id'], inplace=True)
-    df.sort_values('created_at', ignore_index=True, inplace=True)
-    df.insert(1, 'topic', topic)
+def _load_dataset(path, topic):
+    df = pd.read_csv(path, dtype=conf.DTYPES, parse_dates=conf.PARSE_DATES,
+                     lineterminator=conf.LINETERMINATOR)
+    df.dropna(subset=conf.DROP_NA, inplace=True)
+    df.drop_duplicates(subset=conf.DROP_DUPLICATES, inplace=True)
+    df.sort_values(conf.COL_CREATED_AT, ignore_index=True, inplace=True)
+    df.rename(columns=conf.RENAME, inplace=True)
+    df.insert(1, conf.COL_TOPIC, topic)
     return df
 
-def load_datasets(path_trump=const.PATH_TRUMP, path_biden=const.PATH_BIDEN):
+def _load_datasets():
+    # Load the first dataset
     print("Loading Trump's dataset...")
-    df_trump = load_dataset(path=path_trump, topic=const.TOPIC_TRUMP)
+    df_trump = _load_dataset(path=conf.PATH_TRUMP, topic=conf.TOPIC_TRUMP)
     print(f"Loaded Trump's dataset with {df_trump.size} rows.")
+    # Load the second dataset
     print("Loading Biden's dataset...")
-    df_biden = load_dataset(path=path_biden, topic=const.TOPIC_BIDEN)
+    df_biden = _load_dataset(path=conf.PATH_BIDEN, topic=conf.TOPIC_BIDEN)
     print(f"Loaded Bidens's dataset with {df_biden.size} rows.")
-    return df_trump, df_biden
+    dfs = [df_trump, df_biden]
+    return dfs
 
-def join_datasets(df_1, df_2):
-    df = pd.concat([df_1, df_2], copy=False, ignore_index=True)
-    df.sort_values('created_at', inplace=True, ignore_index=True)
+def _join_datasets(dfs):
+    df = pd.concat(dfs, copy=False, ignore_index=True)
+    df.sort_values(conf.COL_CREATED_AT, inplace=True, ignore_index=True)
+    return df
+
+def load_and_join_datasets():
+    dfs = _load_datasets()
+    df = _join_datasets(dfs)
     return df
