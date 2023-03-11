@@ -1,5 +1,6 @@
-import org.apache.spark.sql._
+import org.apache.spark.sql.{SparkSession, Dataset, Encoders}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.streaming.Trigger
 import model._
 
 object Main {
@@ -11,40 +12,36 @@ object Main {
       .appName("SparkStructuredStreamingApp")
       .master("spark://spark-master:7077")
       .getOrCreate()
-
-    // Define the log-level for debbuging purposes
     spark.sparkContext.setLogLevel("WARN")
 
     // Import implicits to use the $-notation
     import spark.implicits._
 
-    // Define parameters to read messages from Kafka
+    // Stream messages from Kafka
     val kafkaParams = Map[String, String](
       "kafka.bootstrap.servers" -> "kafka:9092",
-      "subscribe" -> "trump,biden"
+      "subscribe" -> "trump,biden",
+      "startingOffsets" -> "earliest"
     )
-
-    // Read messages from Kafka
     val streamDF = spark.readStream
       .format("kafka")
       .options(kafkaParams)
       .load()
 
-    // Parse messages as Tweet objects
+    // Stream tweets and cast them according to the Tweet class schema
+    val schema = Encoders.product[Tweet].schema
     val tweets: Dataset[Tweet] = streamDF
-      .flatMap {
-        case row if !row.isNullAt(0) && !row.isNullAt(1) && !row.isNullAt(2) =>
-          Tweet.parse(row.mkString)
-        case _ => None
-      }
+      .selectExpr("CAST(value AS STRING)").as[String]
+      .select(from_json($"value", schema).alias("tweets"))
+      .select("tweets.*")
+      .as[Tweet]
 
-    // Print the result on the console
+    // Print results on the console
     val consoleOutput = tweets.writeStream
-      .outputMode("update")
       .format("console")
+      .option("truncate", "false")
+      .trigger(Trigger.ProcessingTime("1 seconds"))
       .start()
-
-    // Wait for the termination signal
     consoleOutput.awaitTermination()
   }
 }

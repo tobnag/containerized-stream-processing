@@ -8,25 +8,23 @@ import java.sql.Timestamp
 case class Tweet(
   created_at: Timestamp,
   tweet_id: Long,
-  tweet: String
+  tweet: String,
+  likes: Int,
+  retweet_count: Int,
+  source: String,
+  user_id: Long,
+  user_name: String,
+  user_screen_name: String,
+  user_description: String,
+  user_join_date: Timestamp,
+  user_followers_count: Int,
+  user_location: String,
+  lat: Double,
+  lng: Double,
+  city: String,
+  country: String,
+  continent: String,
+  state: String,
+  state_code: String,
+  collected_at: Timestamp
 )
-
-/**
- * This object contains a method to parse a string into a Tweet object.
- */
- object Tweet {
-  def parse(line: String): Option[Tweet] = {
-    val fields = line.split("\t")
-    try {     
-      Some(Tweet(
-        Timestamp.valueOf(fields(0)),
-        fields(1).toLong,
-        fields(2)
-      ))
-    } catch {
-      case ex: IndexOutOfBoundsException =>
-        Console.err.println(s"$ex: line = $line")
-        None
-    }
-  }
- }

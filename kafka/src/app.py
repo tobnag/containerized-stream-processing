@@ -8,7 +8,7 @@ import conf
 producer = KafkaProducer(
     bootstrap_servers=conf.BOOTSTRAP_SERVERS,
     api_version=conf.API_VERSION,
-    value_serializer=lambda x: dumps(x).encode(conf.ENCODER)
+    value_serializer=lambda x: dumps(x, default=str).encode(conf.ENCODER)
 )
 
 def kafka_server_healthcheck(max_wait_time_seconds=10):
@@ -26,9 +26,7 @@ def kafka_server_healthcheck(max_wait_time_seconds=10):
 
 def kafka_simulate_tweets(df, time_multiplicator=1, early_stopping=None):
     print("Started tweet simulation. This application will exit when the simulation is complete.")
-    # keep only a subset of the columns for testing purposes. TODO: remove this line
-    df = df[['created_at', 'topic', 'tweet_id']]
-    # slice the dataframe by time and send each row to the corresponding topic
+    # slice the dataframe by time
     current_time = np.min(df[conf.COL_CREATED_AT])
     if early_stopping is None:
         end_time = np.max(df[conf.COL_CREATED_AT])
@@ -36,14 +34,14 @@ def kafka_simulate_tweets(df, time_multiplicator=1, early_stopping=None):
         end_time = current_time + np.timedelta64(early_stopping, 's')
     # wait_time is inversely proportional to the time multiplicator
     wait_time = 1. / time_multiplicator  # in seconds
+    # send messages to kafka
     while current_time < end_time:
         next_time = current_time + np.timedelta64(1, 's')
         df_slice = df[(current_time<=df[conf.COL_CREATED_AT]) & (df[conf.COL_CREATED_AT]<next_time)]
-        for _, data in df_slice.iterrows():
-            producer.send(
-                topic=data[conf.COL_TOPIC],
-                value=data.drop(['created_at', conf.COL_TOPIC]).to_json()  # TODO: remove 'created_at'
-            )
+        for _, row in df_slice.iterrows():
+            topic = row[conf.COL_TOPIC]
+            message = row.drop([conf.COL_TOPIC]).to_dict()
+            producer.send(topic=topic, value=message)
         current_time = next_time
         sleep(wait_time)
     print("Tweet simulation is complete. This application exits now.")
