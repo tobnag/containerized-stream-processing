@@ -11,6 +11,7 @@ object Main {
     val spark = SparkSession.builder
       .appName("SparkStructuredStreamingApp")
       .master("spark://spark-master:7077")
+      .config("spark.sql.streaming.forceDeleteTempCheckpointLocation", "true")
       .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
 
@@ -36,6 +37,17 @@ object Main {
       .select("tweets.*")
       .as[Tweet]
 
+    // Write tweets to Kafka
+    val kafkaOutput = tweets
+      .select(to_json(struct($"*")).alias("value"))
+      .writeStream
+      .format("kafka")
+      .option("kafka.bootstrap.servers", "kafka:9092")
+      .option("topic", "processed_tweets")
+      .option("checkpointLocation", "/tmp/kafka_outbound_checkpoint")
+      .start()
+    kafkaOutput.awaitTermination()
+/**
     // Print results on the console
     val consoleOutput = tweets.writeStream
       .format("console")
@@ -43,5 +55,6 @@ object Main {
       .trigger(Trigger.ProcessingTime("1 seconds"))
       .start()
     consoleOutput.awaitTermination()
+*/
   }
 }
