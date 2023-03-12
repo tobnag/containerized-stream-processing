@@ -49,7 +49,7 @@ def kafka_simulate_tweets(df, time_multiplicator=1, early_stopping=None):
 def main():
     kafka_server_healthcheck()
     df = load_and_join_datasets()
-    kafka_simulate_tweets(df, time_multiplicator=1, early_stopping=60)
+    kafka_simulate_tweets(df, time_multiplicator=5, early_stopping=None)
 
 if __name__ == '__main__':
     main()
