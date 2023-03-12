@@ -24,6 +24,19 @@ services:
     ports:
       - ${KAFKA_PORT}:${KAFKA_PORT}
 
+  kafka-consumer-dev:  # only for development purposes
+    build: ./kafka_consumer_dev
+    image: kafka-consumer-dev:0.1
+    container_name: kafka-consumer-dev
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME
+      - KAFKA_PORT
+      - KAFKA_API_VERSION
+      - KAFKA_TOPIC_TRUMP
+      - KAFKA_TOPIC_BIDEN
+    depends_on:
+      - kafka
+
   kafka-producer:
     build: ./kafka
     image: kafka-producer:0.1
@@ -31,6 +44,7 @@ services:
     depends_on:
       - kafka
       - spark-submit
+      - logstash
     environment:
       - KAFKA_ADVERTISED_HOST_NAME
       - KAFKA_PORT
@@ -40,7 +54,7 @@ services:
       - FILE_PATH_TRUMP
       - FILE_PATH_BIDEN
     volumes:
-      - ./data:${DATA_PATH}
+      - ./data:${DATA_PATH}:ro,Z
 
   spark-master:
     image: bitnami/spark:3.3.2
@@ -80,3 +94,96 @@ services:
       - KAFKA_API_VERSION
       - KAFKA_TOPIC_TRUMP
       - KAFKA_TOPIC_BIDEN
+
+  # ELK Stack
+  #
+  # The 'setup' service runs a one-off script which initializes users inside
+  # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
+  # values of the passwords defined in the '.env' file.
+  #
+  # This task is only performed during the *initial* startup of the stack. On all
+  # subsequent runs, the service simply returns immediately, without performing
+  # any modification to existing users.
+  setup:
+    build:
+      context: setup/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    image: elk-setup:0.1
+    container_name: elk-setup
+    init: true
+    volumes:
+      - ./setup/entrypoint.sh:/entrypoint.sh:ro,Z
+      - ./setup/lib.sh:/lib.sh:ro,Z
+      - ./setup/roles:/roles:ro,Z
+      - setup:/state:Z
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    image: elasticsearch:0.1
+    container_name: elasticsearch
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - elasticsearch:/usr/share/elasticsearch/data:Z
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      node.name: elasticsearch
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      discovery.type: single-node
+    restart: unless-stopped
+
+  logstash:
+    build:
+      context: logstash/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    image: logstash:0.1
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+      - 5044:5044
+      - 50000:50000/tcp
+      - 50000:50000/udp
+      - 9600:9600
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    depends_on:
+      - elasticsearch
+      - kafka
+    restart: unless-stopped
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    image: kibana:0.1
+    container_name: kibana
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    ports:
+      - 5601:5601
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+volumes:
+  setup:
+  elasticsearch:
