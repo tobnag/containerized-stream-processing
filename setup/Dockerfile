@@ -1,7 +1,14 @@
 ARG ELASTIC_VERSION
 
-# https://www.docker.elastic.co/
-FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+FROM elasticsearch:${ELASTIC_VERSION}
+
+# The 'setup' service runs a one-off script which initializes users inside
+# Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
+# values of the passwords defined in the '.env' file.
+#
+# This task is only performed during the *initial* startup of the stack. On all
+# subsequent runs, the service simply returns immediately, without performing
+# any modification to existing users.
 
 USER root
 
