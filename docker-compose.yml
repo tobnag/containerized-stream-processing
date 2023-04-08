@@ -91,9 +91,9 @@ services:
       - SPARK_MASTER_URL=spark://spark-master:7077
       - KAFKA_ADVERTISED_HOST_NAME
       - KAFKA_PORT
-      - KAFKA_API_VERSION
       - KAFKA_TOPIC_TRUMP
       - KAFKA_TOPIC_BIDEN
+      - KAFKA_TOPIC_PROCESSED
 
   elk-setup:
     build:
@@ -153,6 +153,9 @@ services:
     environment:
       LS_JAVA_OPTS: -Xms256m -Xmx256m
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_ADVERTISED_HOST_NAME:-}
+      KAFKA_PORT: ${KAFKA_PORT:-}
+      KAFKA_TOPIC_PROCESSED: ${KAFKA_TOPIC_PROCESSED:-}
     depends_on:
       - elasticsearch
       - kafka

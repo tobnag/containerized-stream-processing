@@ -5,8 +5,13 @@ import model._
 
 object Main {
 
-  def main(args: Array[String]): Unit = {
+  // Create static class members for environment variables of Kafka topics. Variables should be static and final.
+  private val KAFKA_BROKER = sys.env("KAFKA_ADVERTISED_HOST_NAME") + ":" + sys.env("KAFKA_PORT")
+  private val KAFKA_TOPIC_TRUMP = sys.env("KAFKA_TOPIC_TRUMP")
+  private val KAFKA_TOPIC_BIDEN = sys.env("KAFKA_TOPIC_BIDEN")
+  private val KAFKA_TOPIC_PROCESSED = sys.env("KAFKA_TOPIC_PROCESSED")
 
+  def main(args: Array[String]): Unit = {
     // Create a SparkSession
     val spark = SparkSession.builder
       .appName("SparkStructuredStreamingApp")
@@ -19,14 +24,11 @@ object Main {
     import spark.implicits._
 
     // Stream messages from Kafka
-    val kafkaParams = Map[String, String](
-      "kafka.bootstrap.servers" -> "kafka:9092",
-      "subscribe" -> "trump,biden",
-      "startingOffsets" -> "earliest"
-    )
     val streamDF = spark.readStream
       .format("kafka")
-      .options(kafkaParams)
+      .option("kafka.bootstrap.servers", KAFKA_BROKER)
+      .option("subscribe", KAFKA_TOPIC_TRUMP + "," + KAFKA_TOPIC_BIDEN)
+      .option("startingOffsets", "earliest")
       .load()
 
     // Stream tweets and cast them according to the Tweet class schema
@@ -42,19 +44,10 @@ object Main {
       .select(to_json(struct($"*")).alias("value"))
       .writeStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "kafka:9092")
-      .option("topic", "processed_tweets")
+      .option("kafka.bootstrap.servers", KAFKA_BROKER)
+      .option("topic", KAFKA_TOPIC_PROCESSED)
       .option("checkpointLocation", "/tmp/kafka_outbound_checkpoint")
       .start()
     kafkaOutput.awaitTermination()
-/**
-    // Print results on the console
-    val consoleOutput = tweets.writeStream
-      .format("console")
-      .option("truncate", "false")
-      .trigger(Trigger.ProcessingTime("1 seconds"))
-      .start()
-    consoleOutput.awaitTermination()
-*/
   }
 }
