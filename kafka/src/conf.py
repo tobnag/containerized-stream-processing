@@ -14,8 +14,13 @@ DTYPES = {
 }
 PARSE_DATES = [COL_CREATED_AT, 'user_join_date', 'collected_at']
 LINETERMINATOR = '\n'
-DROP_NA = [COL_CREATED_AT, 'tweet']
-DROP_DUPLICATES = [COL_CREATED_AT, 'tweet_id', 'user_id']
+DROP_NA = [COL_CREATED_AT, 'tweet_id', 'tweet']
+DROP_DUPLICATES = [COL_CREATED_AT, COL_TOPIC, 'tweet_id']
+FILL_NA_INT = ['likes', 'retweet_count', 'user_followers_count']
+FILL_NA_INT_DEFAULT = -1
+FILL_NA_FLOAT = ['lat', 'long']
+FILL_NA_FLOAT_DEFAULT = -1000.
+FILL_NA_OTHER_DEFAULT = ''
 RENAME = {'long': 'lng'}  # long is a reserved keyword
 
 # Kafka

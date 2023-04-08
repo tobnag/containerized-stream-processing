@@ -4,10 +4,6 @@ import conf
 def _load_dataset(path, topic):
     df = pd.read_csv(path, dtype=conf.DTYPES, parse_dates=conf.PARSE_DATES,
                      lineterminator=conf.LINETERMINATOR)
-    df.dropna(subset=conf.DROP_NA, inplace=True)
-    df.drop_duplicates(subset=conf.DROP_DUPLICATES, inplace=True)
-    df.sort_values(conf.COL_CREATED_AT, ignore_index=True, inplace=True)
-    df.rename(columns=conf.RENAME, inplace=True)
     df.insert(1, conf.COL_TOPIC, topic)
     return df
 
@@ -31,4 +27,19 @@ def _join_datasets(dfs):
 def load_and_join_datasets():
     dfs = _load_datasets()
     df = _join_datasets(dfs)
+    return df
+
+def clean_dataset(df):
+    # Basic cleaning
+    df.dropna(subset=conf.DROP_NA, inplace=True)
+    df.drop_duplicates(subset=conf.DROP_DUPLICATES, inplace=True)
+    df.sort_values(conf.COL_CREATED_AT, ignore_index=True, inplace=True)
+
+    # Handle missing values
+    df[conf.FILL_NA_INT] = df[conf.FILL_NA_INT].fillna(conf.FILL_NA_INT_DEFAULT)
+    df[conf.FILL_NA_FLOAT] = df[conf.FILL_NA_FLOAT].fillna(conf.FILL_NA_FLOAT_DEFAULT)
+    df.fillna(conf.FILL_NA_OTHER_DEFAULT, inplace=True)
+
+    # Rename columns to avoid reserved keywords
+    df.rename(columns=conf.RENAME, inplace=True)
     return df

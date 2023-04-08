@@ -2,7 +2,7 @@ import numpy as np
 from time import sleep
 from json import dumps
 from kafka import KafkaProducer
-from data import load_and_join_datasets
+from data import load_and_join_datasets, clean_dataset
 import conf
 
 producer = KafkaProducer(
@@ -49,6 +49,7 @@ def kafka_simulate_tweets(df, time_multiplicator=1, early_stopping=None):
 def main():
     kafka_server_healthcheck()
     df = load_and_join_datasets()
+    df = clean_dataset(df)
     kafka_simulate_tweets(df, time_multiplicator=5, early_stopping=None)
 
 if __name__ == '__main__':
