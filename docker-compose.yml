@@ -95,7 +95,7 @@ services:
       - KAFKA_TOPIC_TRUMP
       - KAFKA_TOPIC_BIDEN
 
-  setup:
+  elk-setup:
     build:
       context: setup/
       args:
