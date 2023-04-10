@@ -103,7 +103,6 @@ services:
     container_name: elasticsearch
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
-      - elasticsearch:/usr/share/elasticsearch/data:Z
     ports:
       - 9200:9200
       - 9300:9300
@@ -144,6 +143,3 @@ services:
     depends_on:
       - elasticsearch
     restart: unless-stopped
-
-volumes:
-  elasticsearch:
