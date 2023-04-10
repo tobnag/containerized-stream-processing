@@ -1,15 +1,23 @@
-import org.apache.spark.sql.{SparkSession, Dataset, Encoders}
+import org.apache.spark.sql.{SparkSession, DataFrame, Dataset, Encoders}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.Trigger
-import model._
+import model.{Tweet, ProcessedTweet}
 
 object Main {
 
   // Create static class members for environment variables of Kafka topics. Variables should be static and final.
-  private val KAFKA_BROKER = sys.env("KAFKA_ADVERTISED_HOST_NAME") + ":" + sys.env("KAFKA_PORT")
-  private val KAFKA_TOPIC_TRUMP = sys.env("KAFKA_TOPIC_TRUMP")
-  private val KAFKA_TOPIC_BIDEN = sys.env("KAFKA_TOPIC_BIDEN")
-  private val KAFKA_TOPIC_PROCESSED = sys.env("KAFKA_TOPIC_PROCESSED")
+  // private val KAFKA_BROKER = sys.env("KAFKA_ADVERTISED_HOST_NAME") + ":" + sys.env("KAFKA_PORT")
+  // private val KAFKA_TOPIC_TRUMP = sys.env("KAFKA_TOPIC_TRUMP")
+  // private val KAFKA_TOPIC_BIDEN = sys.env("KAFKA_TOPIC_BIDEN")
+  // private val KAFKA_TOPIC_PROCESSED = sys.env("KAFKA_TOPIC_PROCESSED")
+
+  // Environment variables and static class members
+  private val KAFKA_BROKER = "kafka:9092"
+  private val KAFKA_TOPIC_TRUMP = "trump"
+  private val KAFKA_TOPIC_BIDEN = "biden"
+  private val KAFKA_TOPIC_PROCESSED = "processed_tweets"
+  private val NAME_TRUMP = "Donald Trump"
+  private val NAME_BIDEN = "Joe Biden"
 
   def main(args: Array[String]): Unit = {
     // Create a SparkSession
@@ -24,23 +32,34 @@ object Main {
     import spark.implicits._
 
     // Stream messages from Kafka
-    val streamDF = spark.readStream
+    val loadStream = (topic: String) => spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", KAFKA_BROKER)
-      .option("subscribe", KAFKA_TOPIC_TRUMP + "," + KAFKA_TOPIC_BIDEN)
+      .option("subscribe", topic)
       .option("startingOffsets", "earliest")
       .load()
+    val streamTrump: DataFrame = loadStream(KAFKA_TOPIC_TRUMP)
+    val streamBiden: DataFrame = loadStream(KAFKA_TOPIC_BIDEN)
 
     // Stream tweets and cast them according to the Tweet class schema
     val schema = Encoders.product[Tweet].schema
-    val tweets: Dataset[Tweet] = streamDF
+    val readStream = (stream: DataFrame) => stream
       .selectExpr("CAST(value AS STRING)").as[String]
       .select(from_json($"value", schema).alias("tweets"))
       .select("tweets.*")
       .as[Tweet]
+    val tweetsTrump: Dataset[Tweet] = streamTrump.transform(readStream)
+    val tweetsBiden: Dataset[Tweet] = streamBiden.transform(readStream)
+
+    // Process tweets
+    val processedTweetsTrump: Dataset[ProcessedTweet] = tweetsTrump.map(_.process(NAME_TRUMP))
+    val processedTweetsBiden: Dataset[ProcessedTweet] = tweetsBiden.map(_.process(NAME_BIDEN))
+
+    // Merge streams of processed tweets for the analytics service
+    val processedTweets: Dataset[ProcessedTweet] = processedTweetsTrump.union(processedTweetsBiden)
 
     // Write tweets to Kafka
-    val kafkaOutput = tweets
+    val kafkaOutput = processedTweets
       .select(to_json(struct($"*")).alias("value"))
       .writeStream
       .format("kafka")

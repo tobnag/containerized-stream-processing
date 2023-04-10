@@ -3,7 +3,16 @@ package model
 import java.sql.Timestamp
 
 /**
- * This class models a Tweet.
+ * This class models a processed Tweet as it is provided to the analytics service.
+ */
+case class ProcessedTweet(
+    candidate: String,   // respective presidential candidate
+    analysis: Analysis,  // different analytical insights
+    tweet: Tweet,        // original tweet with metadata
+)
+
+/**
+ * This class models a Tweet object with all relevant metadata.
  */
 case class Tweet(
   created_at: Timestamp,
@@ -27,4 +36,9 @@ case class Tweet(
   state: String,
   state_code: String,
   collected_at: Timestamp
-)
+) {
+  def process(candidate: String): ProcessedTweet = {
+    val analysis = Analysis(this)
+    ProcessedTweet(candidate, analysis, this)
+  }
+}
