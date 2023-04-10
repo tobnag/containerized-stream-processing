@@ -95,32 +95,8 @@ services:
       - KAFKA_TOPIC_BIDEN
       - KAFKA_TOPIC_PROCESSED
 
-  elk-setup:
-    build:
-      context: setup/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    image: elk-setup:0.1
-    container_name: elk-setup
-    init: true
-    volumes:
-      - ./setup/entrypoint.sh:/entrypoint.sh:ro,Z
-      - ./setup/lib.sh:/lib.sh:ro,Z
-      - ./setup/roles:/roles:ro,Z
-      - setup:/state:Z
-    environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-    depends_on:
-      - elasticsearch
-
   elasticsearch:
-    build:
-      context: elasticsearch/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    image: elasticsearch:0.1
+    image: elasticsearch:${ELASTIC_VERSION}
     container_name: elasticsearch
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
@@ -131,16 +107,11 @@ services:
     environment:
       node.name: elasticsearch
       ES_JAVA_OPTS: -Xms512m -Xmx512m
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       discovery.type: single-node
     restart: unless-stopped
 
   logstash:
-    build:
-      context: logstash/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    image: logstash:0.1
+    image: logstash:${ELASTIC_VERSION}
     container_name: logstash
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
@@ -152,32 +123,24 @@ services:
       - 9600:9600
     environment:
       LS_JAVA_OPTS: -Xms256m -Xmx256m
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
       KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_ADVERTISED_HOST_NAME:-}
-      KAFKA_PORT: ${KAFKA_PORT:-}
-      KAFKA_TOPIC_PROCESSED: ${KAFKA_TOPIC_PROCESSED:-}
+      KAFKA_PORT: ${KAFKA_PORT}
+      KAFKA_TOPIC_PROCESSED: ${KAFKA_TOPIC_PROCESSED}
     depends_on:
       - elasticsearch
       - kafka
     restart: unless-stopped
 
   kibana:
-    build:
-      context: kibana/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    image: kibana:0.1
+    image: kibana:${ELASTIC_VERSION}
     container_name: kibana
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
     ports:
       - 5601:5601
-    environment:
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
     depends_on:
       - elasticsearch
     restart: unless-stopped
 
 volumes:
-  setup:
   elasticsearch:
