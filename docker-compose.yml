@@ -57,7 +57,7 @@ services:
       - ./data:${DATA_PATH}:ro,Z
 
   spark-master:
-    image: bitnami/spark:3.3.2
+    image: bitnami/spark:${SPARK_VERSION}
     container_name: spark-master
     environment:
       - SPARK_MODE=master
@@ -66,7 +66,7 @@ services:
       - '7077:7077'
 
   spark-worker:
-    image: bitnami/spark:3.3.2
+    image: bitnami/spark:${SPARK_VERSION}
     container_name: spark-worker
     depends_on:
       - spark-master
@@ -79,7 +79,10 @@ services:
       - '8081:8081'
 
   spark-submit:
-    build: ./spark
+    build:
+      context: ./spark
+      args:
+        SPARK_VERSION: ${SPARK_VERSION}
     image: spark-submit:0.1
     container_name: spark-submit
     depends_on:
