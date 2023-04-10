@@ -17,23 +17,17 @@ services:
       - zookeeper
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:${KAFKA_PORT}
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://${KAFKA_ADVERTISED_HOST_NAME}:${KAFKA_PORT}
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
     ports:
-      - ${KAFKA_PORT}:${KAFKA_PORT}
+      - 9092:9092
 
   kafka-consumer-dev:  # only for development purposes
     build: ./kafka_consumer_dev
     image: kafka-consumer-dev:0.1
     container_name: kafka-consumer-dev
-    environment:
-      - KAFKA_ADVERTISED_HOST_NAME
-      - KAFKA_PORT
-      - KAFKA_API_VERSION
-      - KAFKA_TOPIC_TRUMP
-      - KAFKA_TOPIC_BIDEN
     depends_on:
       - kafka
 
@@ -46,11 +40,6 @@ services:
       - spark-submit
       - logstash
     environment:
-      - KAFKA_ADVERTISED_HOST_NAME
-      - KAFKA_PORT
-      - KAFKA_API_VERSION
-      - KAFKA_TOPIC_TRUMP
-      - KAFKA_TOPIC_BIDEN
       - FILE_PATH_TRUMP
       - FILE_PATH_BIDEN
     volumes:
@@ -92,11 +81,6 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-      - KAFKA_ADVERTISED_HOST_NAME
-      - KAFKA_PORT
-      - KAFKA_TOPIC_TRUMP
-      - KAFKA_TOPIC_BIDEN
-      - KAFKA_TOPIC_PROCESSED
 
   elasticsearch:
     image: elasticsearch:${ELASTIC_VERSION}
@@ -125,9 +109,6 @@ services:
       - 9600:9600
     environment:
       LS_JAVA_OPTS: -Xms256m -Xmx256m
-      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_ADVERTISED_HOST_NAME:-}
-      KAFKA_PORT: ${KAFKA_PORT}
-      KAFKA_TOPIC_PROCESSED: ${KAFKA_TOPIC_PROCESSED}
     depends_on:
       - elasticsearch
       - kafka

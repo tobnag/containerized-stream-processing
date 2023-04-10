@@ -5,12 +5,6 @@ import model.{Tweet, ProcessedTweet}
 
 object Main {
 
-  // Create static class members for environment variables of Kafka topics. Variables should be static and final.
-  // private val KAFKA_BROKER = sys.env("KAFKA_ADVERTISED_HOST_NAME") + ":" + sys.env("KAFKA_PORT")
-  // private val KAFKA_TOPIC_TRUMP = sys.env("KAFKA_TOPIC_TRUMP")
-  // private val KAFKA_TOPIC_BIDEN = sys.env("KAFKA_TOPIC_BIDEN")
-  // private val KAFKA_TOPIC_PROCESSED = sys.env("KAFKA_TOPIC_PROCESSED")
-
   // Environment variables and static class members
   private val KAFKA_BROKER = "kafka:9092"
   private val KAFKA_TOPIC_TRUMP = "trump"

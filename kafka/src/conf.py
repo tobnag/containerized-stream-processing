@@ -24,10 +24,10 @@ FILL_NA_OTHER_DEFAULT = ''
 RENAME = {'long': 'lng'}  # long is a reserved keyword
 
 # Kafka
-BOOTSTRAP_SERVERS = f"{os.environ['KAFKA_ADVERTISED_HOST_NAME']}:{os.environ['KAFKA_PORT']}"
-API_VERSION = tuple(map(lambda s: int(s.strip()), os.environ['KAFKA_API_VERSION'].split(',')))
-TOPIC_TRUMP = os.environ['KAFKA_TOPIC_TRUMP']
-TOPIC_BIDEN = os.environ['KAFKA_TOPIC_BIDEN']
+BOOTSTRAP_SERVERS = "kafka:9092"
+API_VERSION = (0, 10, 2)
+TOPIC_TRUMP = "trump"
+TOPIC_BIDEN = "biden"
 PATH_TRUMP = os.environ['FILE_PATH_TRUMP']
 PATH_BIDEN = os.environ['FILE_PATH_BIDEN']
 ENCODER = 'utf-8'

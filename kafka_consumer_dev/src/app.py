@@ -2,8 +2,8 @@ import os
 from json import loads 
 from kafka import KafkaConsumer
 
-BOOTSTRAP_SERVERS = f"{os.environ['KAFKA_ADVERTISED_HOST_NAME']}:{os.environ['KAFKA_PORT']}"
-API_VERSION = tuple(map(lambda s: int(s.strip()), os.environ['KAFKA_API_VERSION'].split(',')))
+BOOTSTRAP_SERVERS = "kafka:9092"
+API_VERSION = (0, 10, 2)
 
 consumer = KafkaConsumer(
     'processed_tweets',
