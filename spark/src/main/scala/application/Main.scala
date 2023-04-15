@@ -22,14 +22,9 @@ object Main {
       .appName("SparkStructuredStreamingApp")
       .master("spark://spark-master:7077")
       .config("spark.sql.streaming.forceDeleteTempCheckpointLocation", "true")
-      .config("spark.jars.packages", "com.johnsnowlabs.nlp:spark-nlp_2.12:4.3.2")
       .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
 
-    // Print the spark session to the console for debugging
-    println(s"Main: spark = $spark")
-    val testSession = SparkSession.active
-    println(s"Main: activeSession = ${testSession}")
     import spark.implicits._
 
     // Stream messages from Kafka
