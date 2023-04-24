@@ -1,0 +1,10 @@
+{
+    "index_patterns": ["tweets-*"],
+    "mappings": {
+        "properties": {
+            "@timestamp_tweet": {
+                "type": "date"
+            }
+        }
+    }
+}
