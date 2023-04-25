@@ -21,7 +21,7 @@ FILL_NA_INT_DEFAULT = -1
 FILL_NA_FLOAT = ['lat', 'long']
 FILL_NA_FLOAT_DEFAULT = -1000.
 FILL_NA_OTHER_DEFAULT = ''
-RENAME = {'long': 'lng'}  # long is a reserved keyword
+RENAME = {'long': 'lon'}  # long is a reserved keyword
 
 # Kafka
 BOOTSTRAP_SERVERS = "kafka:9092"

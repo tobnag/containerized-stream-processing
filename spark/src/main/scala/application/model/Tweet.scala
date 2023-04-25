@@ -29,7 +29,7 @@ case class Tweet(
   user_followers_count: Int,
   user_location: String,
   lat: Double,
-  lng: Double,
+  lon: Double,
   city: String,
   country: String,
   continent: String,
