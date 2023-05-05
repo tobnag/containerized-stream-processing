@@ -1,4 +1,7 @@
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # Datasets
 COL_CREATED_AT = 'created_at'
@@ -28,6 +31,15 @@ BOOTSTRAP_SERVERS = "kafka:9092"
 API_VERSION = (0, 10, 2)
 TOPIC_TRUMP = "trump"
 TOPIC_BIDEN = "biden"
-PATH_TRUMP = os.environ['FILE_PATH_TRUMP']
-PATH_BIDEN = os.environ['FILE_PATH_BIDEN']
+PATH_TRUMP = os.path.join(os.environ['CONTAINER_DATA_FOLDER'], os.environ['FILE_NAME_TRUMP'])
+PATH_BIDEN = os.path.join(os.environ['CONTAINER_DATA_FOLDER'], os.environ['FILE_NAME_BIDEN'])
 ENCODER = 'utf-8'
+
+# App configuration
+TIME_MULTIPLIER = float(os.environ['TIME_MULTIPLIER'])
+if TIME_MULTIPLIER < 1:
+    logging.warning(f"TIME_MULTIPLIER={TIME_MULTIPLIER} must be >= 1. Setting it to 1.")
+    TIME_MULTIPLIER = 1
+elif TIME_MULTIPLIER > 100:
+    logging.warning(f"TIME_MULTIPLIER={TIME_MULTIPLIER} must be <= 100. Setting it to 100.")
+    TIME_MULTIPLIER = 100

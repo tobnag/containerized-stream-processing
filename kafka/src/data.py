@@ -1,5 +1,6 @@
 import pandas as pd
 import conf
+import logging
 
 def _load_dataset(path, topic):
     df = pd.read_csv(path, dtype=conf.DTYPES, parse_dates=conf.PARSE_DATES,
@@ -9,13 +10,13 @@ def _load_dataset(path, topic):
 
 def _load_datasets():
     # Load the first dataset
-    print("Loading Trump's dataset...")
+    logging.info("Loading Trump's dataset...")
     df_trump = _load_dataset(path=conf.PATH_TRUMP, topic=conf.TOPIC_TRUMP)
-    print(f"Loaded Trump's dataset with {df_trump.size} rows.")
+    logging.info(f"Loaded Trump's dataset with {df_trump.size} rows.")
     # Load the second dataset
-    print("Loading Biden's dataset...")
+    logging.info("Loading Biden's dataset...")
     df_biden = _load_dataset(path=conf.PATH_BIDEN, topic=conf.TOPIC_BIDEN)
-    print(f"Loaded Bidens's dataset with {df_biden.size} rows.")
+    logging.info(f"Loaded Biden's dataset with {df_biden.size} rows.")
     dfs = [df_trump, df_biden]
     return dfs
 

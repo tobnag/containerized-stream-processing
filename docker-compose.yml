@@ -40,10 +40,12 @@ services:
       - spark-submit
       - logstash
     environment:
-      - FILE_PATH_TRUMP
-      - FILE_PATH_BIDEN
+      - CONTAINER_DATA_FOLDER
+      - FILE_NAME_TRUMP
+      - FILE_NAME_BIDEN
+      - TIME_MULTIPLIER
     volumes:
-      - ./data:${DATA_PATH}:ro,Z
+      - .${LOCAL_DATA_FOLDER}:${CONTAINER_DATA_FOLDER}:ro,Z
 
   spark-master:
     image: bitnami/spark:${SPARK_VERSION}
