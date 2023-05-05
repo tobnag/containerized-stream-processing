@@ -51,9 +51,9 @@ def kafka_simulate_tweets(df):
     logging.info("Tweet simulation is complete. This application exits now.")
 
 def main():
-    kafka_server_healthcheck()
     df = load_and_join_datasets()
     df = clean_dataset(df)
+    kafka_server_healthcheck()
     kafka_simulate_tweets(df)
 
 if __name__ == '__main__':
