@@ -3,8 +3,11 @@ package application
 import org.apache.spark.sql.{SparkSession, DataFrame, Dataset, Encoders}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.Trigger
-import application.model.{Tweet, ProcessedTweet}
+import application.processing.{Tweet, ProcessedTweet}
 
+/**
+ * Main object and entry point of the application
+ */
 object Main {
 
   // Static class members

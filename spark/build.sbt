@@ -16,9 +16,7 @@ lazy val sparkDoc = project
       library.sparkCore,
       library.sparkSql,
       library.sparkStreaming,
-      library.sparkStreamingKafka,
-      library.sentimentAnalysis,
-      library.sentimentAnalysisModels
+      library.sparkStreamingKafka
     )
   )
 
@@ -31,7 +29,6 @@ lazy val library = new {
   val version = new {
     val scala = "2.12.17"
     val spark = "3.3.2"
-    val stanfordNLP = "4.5.3"
   }
 
   val spark = "org.apache.spark" %% "spark-sql-kafka-0-10" % version.spark
@@ -39,8 +36,6 @@ lazy val library = new {
   val sparkSql = "org.apache.spark" %% "spark-sql" % version.spark
   val sparkStreaming = "org.apache.spark" %% "spark-streaming" % version.spark
   val sparkStreamingKafka = "org.apache.spark" %% "spark-streaming-kafka-0-10" % version.spark
-  val sentimentAnalysis = "edu.stanford.nlp" % "stanford-corenlp" % version.stanfordNLP
-  val sentimentAnalysisModels = "edu.stanford.nlp" % "stanford-corenlp" % version.stanfordNLP classifier "models"
 }
 
 // *****************************************************************************

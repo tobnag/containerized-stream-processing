@@ -1,18 +1,9 @@
-package application.model
+package application.processing
 
 import java.sql.Timestamp
 
 /**
- * This class models a processed Tweet as it is provided to the analytics service.
- */
-case class ProcessedTweet(
-    candidate: String,   // respective presidential candidate
-    analysis: Analysis,  // different analytical insights
-    tweet: Tweet,        // original tweet with metadata
-)
-
-/**
- * This class models a Tweet object with all relevant metadata.
+ * This class models a Tweet as it is provided by the data stream.
  */
 case class Tweet(
   created_at: Timestamp,
@@ -42,3 +33,12 @@ case class Tweet(
     ProcessedTweet(candidate, analysis, this)
   }
 }
+
+/**
+ * This class models a processed Tweet as it is provided to the analytics service.
+ */
+case class ProcessedTweet(
+    candidate: String,   // respective presidential candidate
+    analysis: Analysis,  // different analytical insights
+    tweet: Tweet,        // original tweet with metadata
+)
