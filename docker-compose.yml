@@ -24,13 +24,6 @@ services:
     ports:
       - 9092:9092
 
-  kafka-consumer-dev:  # only for development purposes
-    build: ./kafka_consumer_dev
-    image: kafka-consumer-dev:0.1
-    container_name: kafka-consumer-dev
-    depends_on:
-      - kafka
-
   kafka-producer:
     build: ./kafka
     image: kafka-producer:0.1
