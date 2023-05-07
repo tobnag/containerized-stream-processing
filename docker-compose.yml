@@ -3,7 +3,7 @@ version: "3"
 services:
 
   zookeeper:
-    image: bitnami/zookeeper:3.8
+    image: bitnami/zookeeper:3.8.1
     container_name: zookeeper
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
@@ -11,13 +11,12 @@ services:
       - '2181:2181'
       
   kafka:
-    image: bitnami/kafka:3.4
+    image: bitnami/kafka:3.3.2
     container_name: kafka
     depends_on:
       - zookeeper
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -119,3 +118,10 @@ services:
     depends_on:
       - elasticsearch
     restart: unless-stopped
+
+  kibana-setup:
+    build: ./kibana/setup
+    image: kibana-setup:0.1
+    container_name: kibana-setup
+    depends_on:
+      - kibana
