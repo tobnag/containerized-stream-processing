@@ -14,6 +14,14 @@ producer = KafkaProducer(
 )
 
 def kafka_server_healthcheck(max_wait_time_seconds=30):
+    """Check if the Kafka bootstrap server is connected.
+    
+    Args:
+        max_wait_time_seconds (int): Maximum time to wait for the Kafka bootstrap server to connect.
+
+    Raises:
+        RuntimeError: If the Kafka bootstrap server is not connected after max_wait_time_seconds.
+    """
     i = 0
     while i < max_wait_time_seconds:
         if producer.bootstrap_connected():
@@ -28,6 +36,11 @@ def kafka_server_healthcheck(max_wait_time_seconds=30):
     raise RuntimeError(error_message)
 
 def kafka_simulate_tweets(df):
+    """Simulate tweets by sending messages to Kafka.
+    
+    Args:
+        df (pandas.DataFrame): The dataframe containing the tweets.
+    """
     logging.info("Started tweet simulation. This application will exit when the simulation is complete.")
     # slice the dataframe by time
     current_time = np.min(df[conf.COL_CREATED_AT])
