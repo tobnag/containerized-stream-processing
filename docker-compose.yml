@@ -119,9 +119,11 @@ services:
       - elasticsearch
     restart: unless-stopped
 
-  kibana-setup:
-    build: ./kibana/setup
-    image: kibana-setup:0.1
-    container_name: kibana-setup
+  kibana-dashboard:
+    build: ./kibana/dashboard
+    image: kibana-dashboard:0.1
+    container_name: kibana-dashboard
+    ports:
+      - 8000:80
     depends_on:
       - kibana
