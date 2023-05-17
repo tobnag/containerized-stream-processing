@@ -51,7 +51,19 @@ hashtag_donaldtrump.csv hashtag_joebiden.csv
 > If you like to rename of the data folder or the CSV files, make sure to update the corresponding environment variables in the [.env](./.env) file.
 
 ## Usage
-Start the streaming pipeline with the following command:
+The streaming pipeline consists of the following services, as defined in the [docker-compose.yml](./docker-compose.yml):
+- [zookeeper](https://hub.docker.com/r/bitnami/zookeeper) - managing the Kafka cluster
+- [kafka](https://hub.docker.com/r/bitnami/kafka) - transmitting messages in different parts of the pipeline
+- [kafka-producer](./kafka/Dockerfile) - reading the CSV files and functioning as streaming source for the pipeline
+- [spark-master](https://hub.docker.com/r/bitnami/spark) - managing the Spark cluster
+- [spark-worker](https://hub.docker.com/r/bitnami/spark) - worker node of the Spark cluster
+- [spark-submit](./spark/Dockerfile) - Spark application on the worker node for processing the streaming data
+- [logstash](https://hub.docker.com/_/logstash) - taking the processed streaming data and writing it to Elasticsearch
+- [elasticsearch](https://hub.docker.com/_/elasticsearch) - storing the streaming data in a NoSQL database
+- [kibana](https://hub.docker.com/_/kibana) - providing the platform for visualizing the streaming data
+- [kibana-dashboard](./kibana/dashboard/Dockerfile) - importing required objects into Kibana and providing a reverse proxy for accessing the dashboard
+
+To start the streaming pipeline, run the following command in the project directory:
 ```bash
 docker-compose up -d
 ```
