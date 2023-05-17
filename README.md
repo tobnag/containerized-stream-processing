@@ -68,7 +68,7 @@ To start the streaming pipeline, run the following command in the project direct
 docker-compose up -d
 ```
 
-The first run will take a while, as Docker needs to download and build the required images. As soon as the pipeline is up and running, the Kafka producer starts reading the CSV files and replays tweets according to their creation timestamps. The tweets are processed by Spark using the Structured Streaming API. Amongst other insights, a simple sentiment analysis is calculated based positive and negative word lists [(Mukul, 2020)](#sources). The results are written to Elasticsearch via Logstash and visualized in a Kibana dashboard.
+The first run will take a while, as Docker needs to download and build the required images. As soon as the pipeline is up and running, the Kafka producer starts reading the CSV files and replays tweets according to their creation timestamps. The tweets are processed by Spark using the Structured Streaming API. Besides a hashtag extraction and other insights, a simple sentiment analysis is performed based positive and negative word lists [(Mukul, 2020)](#sources). The results are written to Elasticsearch via Logstash and visualized in a Kibana dashboard.
 
 The Kibana dashboard takes a few seconds to prepare. As soon as Kibana is ready, you can access the dashboard via a reverse proxy at http://localhost:8000.
 
