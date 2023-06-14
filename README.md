@@ -15,7 +15,7 @@ The followig architecture diagram illustrates the solution stack and the data fl
 1. [Requirements](#requirements)
 1. [Installation](#installation)
 1. [Usage](#usage)
-1. [Delimitations](#delimitations)
+1. [Limitations](#limitations)
 1. [Sources](#sources)
 1. [License](#license)
 
@@ -48,7 +48,7 @@ hashtag_donaldtrump.csv hashtag_joebiden.csv
 ```
 
 > **Note**
-> If you like to rename of the data folder or the CSV files, make sure to update the corresponding environment variables in the [.env](./.env) file.
+> If you want to rename the data folder or the CSV files, make sure to update the corresponding environment variables in the [.env](./.env) file.
 
 ## Usage
 The streaming pipeline consists of the following services, as defined in the [docker-compose.yml](./docker-compose.yml):
@@ -80,8 +80,8 @@ docker-compose down
 > **Note**
 > The simulation speed of the Kafka producer can be accelerated by changing the TIME_MULTIPLIER environment variable in the [.env](./.env) file. By default, this variable is set to 10, which means that the tweets are replayed ten times faster than real-time.
 
-## Delimitations
-The following delimitations apply to this project:
+## Limitations
+The following limitations apply to this project:
 - The application is not designed for production use. It is intended to demonstrate the setup of a containerized streaming pipeline with Docker.
 - Although this application is capable of running in a distributed environment, the present configuration is optimized for a single-node setup.
 - For simplicity reasons, security features such as authentication, authorization, and encryption are not implemented.
